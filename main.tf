@@ -93,6 +93,7 @@ resource "aws_ecs_service" "no_balancer" {
   cluster         = "${var.cluster}"
   task_definition = "${aws_ecs_task_definition.this.arn}"
   desired_count   = "${var.desired}"
+  iam_role        = "arn:aws:iam::159895783284:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"  
   health_check_grace_period_seconds = 0
 
   ordered_placement_strategy {
