@@ -1,3 +1,8 @@
+variable "aws_account" {
+  description = "ID of AWS Account"
+  default     = "111111111111"
+}
+
 variable "name" {
   description = "Name prefix for all VPC resources."
   default     = "App"
