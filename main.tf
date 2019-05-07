@@ -16,6 +16,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = "${data.template_file.this.rendered}"
   volume = "${var.volumes}"
   task_role_arn = "${aws_iam_role.this.arn}"
+  execution_role_arn = "${aws_iam_role.this.arn}"
   requires_compatibilities = ["${var.compatibilities}"]
 }
 

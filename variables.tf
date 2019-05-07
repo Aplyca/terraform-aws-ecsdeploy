@@ -1,6 +1,6 @@
 variable "aws_account" {
   description = "ID of AWS Account"
-  default     = "111111111111"
+  default     = "*"
 }
 
 variable "name" {
