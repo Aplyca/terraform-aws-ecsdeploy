@@ -29,6 +29,12 @@ resource "aws_alb_target_group" "this" {
   tags = "${merge(var.tags, map("Name", "${var.name}"))}"
   deregistration_delay = 3
 
+  health_check {
+    path = "${var.balancer["health_check_path"]}"
+    healthy_threshold = "${var.balancer["healthy_threshold"]}"
+    unhealthy_threshold = "${var.balancer["unhealthy_threshold"]}"
+  }
+
   stickiness {
     type = "lb_cookie"
     enabled = false

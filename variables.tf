@@ -35,6 +35,9 @@ variable "balancer" {
     condition_values = ""
     container_name = ""
     container_port = 0
+    health_check_path = "/"
+    healthy_threshold = "5"
+    unhealthy_threshold = "2"
   }
 }
 
