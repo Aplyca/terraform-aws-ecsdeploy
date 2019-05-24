@@ -111,7 +111,7 @@ resource "aws_ecs_service" "private" {
   count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode == "awsvpc" ? 1 : 0}"
   name            = "${local.id}"
   cluster         = "${var.cluster}"
-  task_definition = "${aws_ecs_task_definition.this.arn}"
+  task_definition = "${aws_ecs_task_definition.private.arn}"
   desired_count   = "${var.desired}"
   #iam_role       = "aws-service-role"
   health_check_grace_period_seconds = 0
