@@ -41,6 +41,15 @@ variable "balancer" {
   }
 }
 
+variable "health_check" {
+  description = "Health checks for Target Group"
+  default = {
+    health_check_path = "/"
+    healthy_threshold = "5"
+    unhealthy_threshold = "2"
+  }
+}
+
 variable "volumes" {
   description = "Volumes"
   default = []
@@ -85,4 +94,9 @@ variable "subnets" {
 variable "security_group" {
   description = "Used for Networking in Service Discovery"
   default = ""
+}
+
+variable "enable_ssm" {
+  description = "Compatibility for old versions without support for SSM"
+  default = false
 }

@@ -17,7 +17,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = "${data.template_file.this.rendered}"
   volume = "${var.volumes}"
   task_role_arn = "${aws_iam_role.this.arn}"
-  execution_role_arn = "${aws_iam_role.this.arn}"
+  execution_role_arn = "${var.enable_ssm ? aws_iam_role.this.arn : ""}"
   requires_compatibilities = ["${var.compatibilities}"]
 }
 
@@ -43,9 +43,9 @@ resource "aws_alb_target_group" "this" {
   target_type = "${var.target_type}"
 
   health_check {
-    path = "${var.balancer["health_check_path"]}"
-    healthy_threshold = "${var.balancer["healthy_threshold"]}"
-    unhealthy_threshold = "${var.balancer["unhealthy_threshold"]}"
+    path = "${var.health_check["health_check_path"]}"
+    healthy_threshold = "${var.health_check["healthy_threshold"]}"
+    unhealthy_threshold = "${var.health_check["unhealthy_threshold"]}"
   }
 
   stickiness {
@@ -68,6 +68,7 @@ resource "aws_lb_listener_rule" "http" {
     field  = "${var.balancer["condition_field"]}"
     values = ["${element(split(",", var.balancer["condition_values"]), count.index)}"]
   }
+
 }
 
 resource "aws_lb_listener_rule" "https" {
@@ -84,6 +85,7 @@ resource "aws_lb_listener_rule" "https" {
     field  = "${var.balancer["condition_field"]}"
     values = ["${element(split(",", var.balancer["condition_values"]), count.index)}"]
   }
+
 }
 
 resource "aws_ecs_service" "this" {
@@ -123,7 +125,7 @@ resource "aws_ecs_service" "private" {
   }
 
   service_registries {
-    registry_arn = "${var.registry != "" ? var.registry : ""}" 
+    registry_arn = "${var.registry != "" ? var.registry : ""}"
     container_name = "${var.registry != "" ? var.balancer["container_port"] : ""}"
   }
 
