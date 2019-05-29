@@ -18,15 +18,7 @@ Sample data to use Service Discovery
 Sample data to custom health checks
 -----------------------------------
 ```
- balancer {
-    vpc_id  = "vpc-12345"
-    listener_http =  "${module.ec2.listener_http}"
-    listener_https = "${module.ec2.listener_https}"
-    priority = 210
-    container_name = "Example"
-    container_port = 80
-    condition_field  = "path-pattern"
-    condition_values = "/example"
+ health_check {
     health_check_path = "/example/#/"
     healthy_threshold = "15"
     unhealthy_threshold = "5"
