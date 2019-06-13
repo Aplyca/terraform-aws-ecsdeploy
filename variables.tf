@@ -100,3 +100,13 @@ variable "enable_ssm" {
   description = "Compatibility for old versions without support for SSM"
   default = false
 }
+
+variable "proto_http" {
+  description = "Use HTTP Protocol by default for ALB Target Group"
+  default = true
+}
+
+variable "target_group" {
+  description = "Set existing Target Group for new service"
+  default = ""
+}

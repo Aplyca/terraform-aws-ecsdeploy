@@ -36,7 +36,7 @@ resource "aws_alb_target_group" "this" {
   count = "${var.balancer["vpc_id"] != "" ? 1 : 0}"
   name     = "${local.id}"
   port     = 80
-  protocol = "HTTP"
+  protocol = "${var.proto_http ? "HTTP" : "TCP"}"
   vpc_id = "${var.balancer["vpc_id"]}"
   tags = "${merge(var.tags, map("Name", "${var.name}"))}"
   deregistration_delay = 3
@@ -98,7 +98,7 @@ resource "aws_ecs_service" "this" {
   health_check_grace_period_seconds = 0
 
   load_balancer {
-    target_group_arn = "${aws_alb_target_group.this.0.arn}"
+    target_group_arn = "${var.target_group != "" ? var.target_group : aws_alb_target_group.this.0.arn}"
     container_name = "${var.balancer["container_name"]}"
     container_port = "${var.balancer["container_port"]}"
   }

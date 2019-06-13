@@ -24,3 +24,15 @@ Sample data to custom health checks
     unhealthy_threshold = "5"
   }
 ```
+
+Sample to use TCP instead of HTTP
+-----------------------------------
+```
+  proto_http = false
+```
+
+Sample to use an existing Target Group
+--------------------------------------
+```
+  target_group = "arn:aws:elasticloadbalancing:us-east-1:11111111:targetgroup/mycustomtg/1111111"
+```
