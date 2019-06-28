@@ -37,7 +37,7 @@ Sample to use an existing Target Group
   target_group = "arn:aws:elasticloadbalancing:us-east-1:11111111:targetgroup/mycustomtg/1111111"
 ```
 
-Sample to use Placement Constraints
+Sample to include Placement Constraints
 --------------------------------------
 ```
    placement_constraints {
