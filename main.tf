@@ -19,6 +19,7 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn = "${aws_iam_role.this.arn}"
   execution_role_arn = "${var.enable_ssm ? aws_iam_role.this.arn : ""}"
   requires_compatibilities = ["${var.compatibilities}"]
+  placement_constraints = "${var.placement_constraints}"
 }
 
 resource "aws_ecs_task_definition" "private" {

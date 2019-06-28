@@ -36,3 +36,12 @@ Sample to use an existing Target Group
 ```
   target_group = "arn:aws:elasticloadbalancing:us-east-1:11111111:targetgroup/mycustomtg/1111111"
 ```
+
+Sample to use Placement Constraints
+--------------------------------------
+```
+   placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone in [us-east-1a]"
+  }
+```

@@ -110,3 +110,9 @@ variable "target_group" {
   description = "Set existing Target Group for new service"
   default = ""
 }
+
+variable "placement_constraints" {
+  description = "(Optional) A set of rules that are taken during task placement"
+  type        = "list"
+  default     = []
+}
