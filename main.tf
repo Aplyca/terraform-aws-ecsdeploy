@@ -15,21 +15,48 @@ resource "aws_ecs_task_definition" "this" {
   count = "${var.network_mode != "awsvpc" ? 1 : 0}"
   family                = "${local.id}"
   container_definitions = "${data.template_file.this.rendered}"
-  volume = "${var.volumes}"
+  dynamic "volume" {
+    for_each = var.volumes.name == "" ? [] : list(var.volumes)
+    content {
+      name      = volume.name
+      host_path = volume.host_path
+    }
+  }
   task_role_arn = "${aws_iam_role.this.arn}"
   execution_role_arn = "${var.enable_ssm ? aws_iam_role.this.arn : ""}"
-  requires_compatibilities = ["${var.compatibilities}"]
-  placement_constraints = "${var.placement_constraints}"
+  requires_compatibilities = "${var.compatibilities}"
+  dynamic "placement_constraints" {
+    for_each = var.placement_constraints.type == "" ? [] : list(var.placement_constraints)
+    content {
+      type       = placement_constraints.type
+      expression = placement_constraints.expression
+    }
+  }
+  #placement_constraints {
+  #  type  = "${var.placement_constraints.type}"
+  #  expression = "${var.placement_constraints.expression}"
+  #}
 }
 
 resource "aws_ecs_task_definition" "private" {
   count = "${var.network_mode == "awsvpc" ? 1 : 0}"
   family                = "${local.id}"
   container_definitions = "${data.template_file.this.rendered}"
-  volume = "${var.volumes}"
+  dynamic "volume" {
+    for_each = var.volumes.name == "" ? [] : list(var.volumes)
+
+    content {
+      name          = volume.name
+      host_path = volume.host_path
+    }
+  }
+  #volume {
+  #  name      = "${var.volumes.name}"
+  #  host_path = "${var.volumes.host_path}"
+  #}
   task_role_arn = "${aws_iam_role.this.arn}"
   execution_role_arn = "${aws_iam_role.this.arn}"
-  requires_compatibilities = ["${var.compatibilities}"]
+  requires_compatibilities = "${var.compatibilities}"
   network_mode = "${var.network_mode}"
 }
 
@@ -93,7 +120,7 @@ resource "aws_ecs_service" "this" {
   count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode != "awsvpc" ? 1 : 0}"
   name            = "${local.id}"
   cluster         = "${var.cluster}"
-  task_definition = "${aws_ecs_task_definition.this.arn}"
+  task_definition = "${aws_ecs_task_definition.this.0.arn}"
   desired_count   = "${var.desired}"
   iam_role        = "arn:aws:iam::${var.aws_account}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
   health_check_grace_period_seconds = 0
@@ -114,7 +141,7 @@ resource "aws_ecs_service" "private" {
   count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode == "awsvpc" ? 1 : 0}"
   name            = "${local.id}"
   cluster         = "${var.cluster}"
-  task_definition = "${aws_ecs_task_definition.private.arn}"
+  task_definition = "${aws_ecs_task_definition.private.0.arn}"
   desired_count   = "${var.desired}"
   #iam_role       = "aws-service-role"
   health_check_grace_period_seconds = 0
@@ -131,7 +158,7 @@ resource "aws_ecs_service" "private" {
   }
 
   network_configuration {
-    subnets = ["${var.subnets}"]
+    subnets = "${var.subnets}"
     security_groups = ["${var.security_group}"]
   }
 
@@ -145,7 +172,7 @@ resource "aws_ecs_service" "no_balancer" {
   count = "${var.balancer["vpc_id"] != "" || var.cluster == "" ? 0 : 1}"
   name            = "${local.id}"
   cluster         = "${var.cluster}"
-  task_definition = "${aws_ecs_task_definition.this.arn}"
+  task_definition = "${aws_ecs_task_definition.this.0.arn}"
   desired_count   = "${var.desired}"
   health_check_grace_period_seconds = 0
 
@@ -176,7 +203,7 @@ EOF
 
 module "logs" {
   source  = "Aplyca/cloudwatchlogs/aws"
-  version = "0.1.0"
+  version = "0.2.0"
 
   name    = "${local.id}"
   role = "${aws_iam_role.this.name}"

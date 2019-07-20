@@ -52,7 +52,10 @@ variable "health_check" {
 
 variable "volumes" {
   description = "Volumes"
-  default = []
+  default = {
+    name      = ""
+    host_path = ""
+  }
 }
 
 variable "desired" {
@@ -113,6 +116,9 @@ variable "target_group" {
 
 variable "placement_constraints" {
   description = "(Optional) A set of rules that are taken during task placement"
-  type        = "list"
-  default     = []
+  //type        = "list"
+  default = {
+    type  = ""
+    expression = ""
+  }
 }
