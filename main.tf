@@ -60,8 +60,8 @@ resource "aws_ecs_task_definition" "private" {
   network_mode = "${var.network_mode}"
 }
 
-resource "aws_alb_target_group" "this" {
-  count = "${var.balancer["vpc_id"] != "" ? 1 : 0}"
+resource "aws_alb_target_group" "default" {
+  count = "${var.balancer["vpc_id"] != "" && var.health_check.protocol != "TCP" ? 1 : 0}"
   name     = "${local.id}"
   port     = 80
   protocol = "${var.proto_http ? "HTTP" : "TCP"}"
@@ -70,10 +70,38 @@ resource "aws_alb_target_group" "this" {
   deregistration_delay = 3
   target_type = "${var.target_type}"
 
-  health_check {
-    path = "${var.health_check["health_check_path"]}"
-    healthy_threshold = "${var.health_check["healthy_threshold"]}"
-    unhealthy_threshold = "${var.health_check["unhealthy_threshold"]}"
+  dynamic "health_check" {
+    for_each = var.health_check.protocol != "TCP" ? [] : list(var.health_check)
+
+    content {
+          path = "${var.health_check["health_check_path"]}"
+          healthy_threshold = "${health_check["healthy_threshold"]}"
+          unhealthy_threshold = "${health_check["unhealthy_threshold"]}"
+    }
+
+  }
+}
+
+resource "aws_alb_target_group" "this" {
+  count = "${var.balancer["vpc_id"] != "" && var.health_check.protocol == "TCP" ? 1 : 0}"
+  name     = "${local.id}"
+  port     = 80
+  protocol = "${var.proto_http ? "HTTP" : "TCP"}"
+  vpc_id = "${var.balancer["vpc_id"]}"
+  tags = "${merge(var.tags, map("Name", "${var.name}"))}"
+  deregistration_delay = 3
+  target_type = "${var.target_type}"
+
+  dynamic "health_check" {
+    for_each = var.health_check.protocol == "TCP" ? [] : list(var.health_check)
+    
+    content {
+      port = "traffic-port"
+      healthy_threshold = "${health_check["healthy_threshold"]}"
+      unhealthy_threshold = "${health_check["unhealthy_threshold"]}"
+      protocol = "${health_check["protocol"]}"
+    }
+
   }
 
   stickiness {
@@ -89,7 +117,7 @@ resource "aws_lb_listener_rule" "http" {
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_alb_target_group.this.0.arn}"
+    target_group_arn = "${var.health_check.protocol != "TCP" ? "${aws_alb_target_group.default.0.arn}" : "${aws_alb_target_group.this.0.arn}"}"
   }
 
   condition {
@@ -106,7 +134,7 @@ resource "aws_lb_listener_rule" "https" {
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_alb_target_group.this.0.arn}"
+    target_group_arn = "${var.health_check.protocol != "TCP" ? "${aws_alb_target_group.default.0.arn}" : "${aws_alb_target_group.this.0.arn}"}"
   }
 
   condition {
@@ -137,6 +165,27 @@ resource "aws_ecs_service" "this" {
   }
 }
 
+resource "aws_ecs_service" "default" {
+  count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode != "awsvpc" && var.health_check.protocol != "TCP" ? 1 : 0}"
+  name            = "${local.id}"
+  cluster         = "${var.cluster}"
+  task_definition = "${aws_ecs_task_definition.this.0.arn}"
+  desired_count   = "${var.desired}"
+  iam_role        = "arn:aws:iam::${var.aws_account}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  health_check_grace_period_seconds = 0
+
+  load_balancer {
+    target_group_arn = "${var.target_group != "" ? var.target_group : aws_alb_target_group.default.0.arn}"
+    container_name = "${var.balancer["container_name"]}"
+    container_port = "${var.balancer["container_port"]}"
+  }
+
+  ordered_placement_strategy {
+    type  = "spread"
+    field = "host"
+  }
+}
+
 resource "aws_ecs_service" "private" {
   count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode == "awsvpc" ? 1 : 0}"
   name            = "${local.id}"
@@ -147,7 +196,7 @@ resource "aws_ecs_service" "private" {
   health_check_grace_period_seconds = 0
 
   load_balancer {
-    target_group_arn = "${aws_alb_target_group.this.0.arn}"
+    target_group_arn = "${var.health_check.protocol != "TCP" ? "${aws_alb_target_group.default.0.arn}" : "${aws_alb_target_group.this.0.arn}"}"
     container_name = "${var.balancer["container_name"]}"
     container_port = "${var.balancer["container_port"]}"
   }

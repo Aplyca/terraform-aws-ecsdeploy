@@ -47,6 +47,7 @@ variable "health_check" {
     health_check_path = "/"
     healthy_threshold = "5"
     unhealthy_threshold = "2"
+    protocol = "HTTP"
   }
 }
 
