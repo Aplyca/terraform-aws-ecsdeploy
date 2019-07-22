@@ -117,7 +117,7 @@ variable "target_group" {
 
 variable "placement_constraints" {
   description = "(Optional) A set of rules that are taken during task placement"
-  //type        = "list"
+  #type        = "list"
   default = {
     type  = ""
     expression = ""

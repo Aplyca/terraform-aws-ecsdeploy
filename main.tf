@@ -16,22 +16,24 @@ resource "aws_ecs_task_definition" "this" {
   family                = "${local.id}"
   container_definitions = "${data.template_file.this.rendered}"
   dynamic "volume" {
-    for_each = var.volumes.name == "" ? [] : list(var.volumes)
+    for_each = length(var.volumes) > 0 ? list(var.volumes) : []
+
     content {
-      name      = volume.name
-      host_path = volume.host_path
+      name      = var.volumes.name != "" ? var.volumes.name : ""
+      host_path = var.volumes.host_path != "" ? var.volumes.host_path : ""
     }
   }
   task_role_arn = "${aws_iam_role.this.arn}"
   execution_role_arn = "${var.enable_ssm ? aws_iam_role.this.arn : ""}"
   requires_compatibilities = "${var.compatibilities}"
   dynamic "placement_constraints" {
-    for_each = var.placement_constraints.type == "" ? [] : list(var.placement_constraints)
+    for_each = length(var.placement_constraints) > 0 ? list(var.placement_constraints) : []
     content {
-      type       = placement_constraints.type
-      expression = placement_constraints.expression
+       type       = var.placement_constraints.type != "" ? var.placement_constraints.type : ""
+       expression = var.placement_constraints.expression != "" ? var.placement_constraints.expression : ""
     }
   }
+  # Old Definition for 0.11.x
   #placement_constraints {
   #  type  = "${var.placement_constraints.type}"
   #  expression = "${var.placement_constraints.expression}"
@@ -43,13 +45,14 @@ resource "aws_ecs_task_definition" "private" {
   family                = "${local.id}"
   container_definitions = "${data.template_file.this.rendered}"
   dynamic "volume" {
-    for_each = var.volumes.name == "" ? [] : list(var.volumes)
+    for_each = length(var.volumes) > 0 ? list(var.volumes) : []
 
     content {
-      name          = volume.name
-      host_path = volume.host_path
+      name      = var.volumes.name != "" ? var.volumes.name : ""
+      host_path = var.volumes.host_path != "" ? var.volumes.host_path : ""
     }
   }
+  # Old Definition for 0.11.x
   #volume {
   #  name      = "${var.volumes.name}"
   #  host_path = "${var.volumes.host_path}"
