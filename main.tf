@@ -13,11 +13,10 @@ resource "aws_ecr_repository" "this" {
 
 resource "aws_ecs_task_definition" "this" {
   count = "${var.network_mode != "awsvpc" ? 1 : 0}"
-  family                = "${local.id}"
+  family  = "${local.id}"
   container_definitions = "${data.template_file.this.rendered}"
   dynamic "volume" {
-    for_each = length(var.volumes) > 0 ? list(var.volumes) : []
-
+    for_each = var.volumes.name != "" ? list(var.volumes) : []
     content {
       name      = var.volumes.name != "" ? var.volumes.name : ""
       host_path = var.volumes.host_path != "" ? var.volumes.host_path : ""
@@ -27,17 +26,12 @@ resource "aws_ecs_task_definition" "this" {
   execution_role_arn = "${var.enable_ssm ? aws_iam_role.this.arn : ""}"
   requires_compatibilities = "${var.compatibilities}"
   dynamic "placement_constraints" {
-    for_each = length(var.placement_constraints) > 0 ? list(var.placement_constraints) : []
+    for_each = var.placement_constraints.type != "" ? list(var.placement_constraints) : []
     content {
-       type       = var.placement_constraints.type != "" ? var.placement_constraints.type : ""
-       expression = var.placement_constraints.expression != "" ? var.placement_constraints.expression : ""
+       type       = var.placement_constraints.type
+       expression = var.placement_constraints.expression
     }
   }
-  # Old Definition for 0.11.x
-  #placement_constraints {
-  #  type  = "${var.placement_constraints.type}"
-  #  expression = "${var.placement_constraints.expression}"
-  #}
 }
 
 resource "aws_ecs_task_definition" "private" {
@@ -148,7 +142,7 @@ resource "aws_lb_listener_rule" "https" {
 }
 
 resource "aws_ecs_service" "this" {
-  count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode != "awsvpc" ? 1 : 0}"
+  count = "${var.balancer["vpc_id"] != "" && var.cluster != "" && var.network_mode != "awsvpc" && var.health_check.protocol == "TCP" ? 1 : 0}"
   name            = "${local.id}"
   cluster         = "${var.cluster}"
   task_definition = "${aws_ecs_task_definition.this.0.arn}"
