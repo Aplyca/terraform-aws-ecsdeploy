@@ -31,17 +31,15 @@ variable "definition_vars" {
 variable "balancer" {
   description = "Listener configurations for ALB"
   default = {
-    vpc_id  = ""
+    name = ""
     condition_values = ""
     container_name = ""
     container_port = 0
-    health_check_path = "/"
-    healthy_threshold = 5
-    unhealthy_threshold = 2
   }
 }
 
 variable "health_check" {
+  type = map
   description = "Health checks for Target Group"
   default = {
     health_check_path = "/"
@@ -90,7 +88,7 @@ variable "target_type" {
 }
 
 variable "subnets" {
-  type = "list"
+  type = list
   default = []
   description = "Used for Networking in Service Discovery"
 }
@@ -122,4 +120,10 @@ variable "placement_constraints" {
     type  = ""
     expression = ""
   }
+}
+
+variable "parameters" {
+  type = map
+  description = "SSM Parameter Store"
+  default = {}
 }
