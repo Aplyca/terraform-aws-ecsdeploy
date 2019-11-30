@@ -1,6 +1,6 @@
 data "template_file" "this" {
     template = file(var.definition_file)
-    vars = merge(var.definition_vars, zipmap(keys(var.repositories), aws_ecr_repository.this.*.repository_url), map("log_group", module.logs.name), zipmap(keys(var.parameters), aws_ssm_parameter.parameters.*.arn))
+    vars = merge(var.definition_vars, zipmap(keys(var.repositories), aws_ecr_repository.this.*.repository_url), map("log_group", module.logs.name), map("region", data.aws_region.name), zipmap(keys(var.parameters), aws_ssm_parameter.parameters.*.arn))
 }
 
 data "aws_iam_policy_document" "ssm_parameter_store" {
@@ -57,3 +57,5 @@ data "aws_alb_listener" "http" {
   load_balancer_arn = data.aws_alb.this.arn
   port              = 80
 }
+
+data "aws_region" "current" {}

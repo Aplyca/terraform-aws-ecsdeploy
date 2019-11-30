@@ -37,9 +37,8 @@ module "my_service" {
     web-version = "master"
   }
 
+  # Parameter value is not supported here. You should set the value manually from the AWS console.
   parameters = {
-    DATABASE_HOST = "Description of this parameter"
-    DATABASE_USER = "Description of this parameter"
     DATABASE_PASSWORD = "Description of this parameter"
   }
 
@@ -54,6 +53,65 @@ module "my_service" {
     Service = "Web"
   }
 }
+```
+
+Example of a Task definition
+
+```JSON
+[{
+    "name": "Web",
+    "portMappings": [{
+      "hostPort": 0,
+      "protocol": "tcp",
+      "containerPort": 80
+    }],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "MyApp"
+      }
+    },
+    "image": "${web-image}:${web-version}",
+    "links": ["App:app"]
+  },
+  {
+    "name": "App",
+    "portMappings": [{
+      "hostPort": 0,
+      "protocol": "tcp",
+      "containerPort": 9000
+    }],
+    "mountPoints": [{
+      "containerPath": "/mnt/storage",
+      "sourceVolume": "MyApp-Storage"
+    }],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "MyApp"
+      }
+    },
+    "image": "${app-image}:${app-version}",
+    "secrets": [{
+        "name": "DATABASE_PASSWORD",
+        "valueFrom": "${DATABASE_PASSWORD}"
+      }
+    ],
+    "environment": [{
+        "name": "DATABASE_HOST",
+        "value": "db.mydomian.com"
+      },
+      {
+        "name": "DATABASE_USER",
+        "value": "user"
+      }
+    ]
+  }
+]
 ```
 
 ## Sample data to use Service Discovery
