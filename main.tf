@@ -166,9 +166,8 @@ EOF
 }
 
 module "logs" {
-  source  = "../terraform-aws-cloudwatchlogs"
-  #source  = "../Aplyca/cloudwatchlogs/aws"
-  #version = "0.2.0"
+  source  = "Aplyca/cloudwatchlogs/aws"
+  version = "0.3.0"
 
   name    = local.id
   role = aws_iam_role.this.name
