@@ -45,22 +45,27 @@ variable "health_check" {
     health_check_path = "/"
     healthy_threshold = "5"
     unhealthy_threshold = "2"
+    interval = "30"
+    timeout = "5"     
     protocol = "HTTP"
   }
 }
 
 variable "volumes" {
-  description = "Volumes"
-  default = {
-    name      = ""
-    host_path = ""
-  }
+  type = list
+  description = "List of Volumes used by the service"
+  default = []
 }
 
 variable "desired" {
   description = "Desired count of tasks in service"
   default = 0
 }
+
+variable "grace_period" {
+  description = "health_check_grace_period_seconds"
+  default = 0
+} 
 
 variable "repositories" {
   description = "Images repositories"
@@ -123,7 +128,7 @@ variable "placement_constraints" {
 }
 
 variable "parameters" {
-  type = map
-  description = "SSM Parameter Store"
-  default = {}
+  type = list
+  description = "List of parameters used by the service form Parameters Store"
+  default = []
 }

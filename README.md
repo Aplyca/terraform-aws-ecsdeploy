@@ -42,10 +42,10 @@ module "my_service" {
     DATABASE_PASSWORD = "Description of this parameter"
   }
 
-  volumes = {
+  volumes = [{
     name      = "MyApp-Storage"
     host_path = "/mnt/myapp-storage"
-  }
+  }]
 
   tags = {
     App = "MyApp"

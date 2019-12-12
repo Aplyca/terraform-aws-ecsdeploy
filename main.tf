@@ -16,12 +16,13 @@ resource "aws_ecs_task_definition" "this" {
   family  = local.id
   container_definitions = data.template_file.this.rendered
   dynamic "volume" {
-    for_each = var.volumes.name != "" ? list(var.volumes) : []
+    for_each = var.volumes
     content {
-      name      = var.volumes.name != "" ? var.volumes.name : ""
-      host_path = var.volumes.host_path != "" ? var.volumes.host_path : ""
+      name      = volume.value.name
+      host_path = volume.value.host_path
     }
   }
+
   task_role_arn = aws_iam_role.this.arn
   execution_role_arn = var.enable_ssm ? aws_iam_role.this.arn : ""
   requires_compatibilities = var.compatibilities
@@ -175,10 +176,11 @@ module "logs" {
   tags = merge(var.tags, map("Name", var.name))
 }
 
+
 resource "aws_ssm_parameter" "parameters" {
   count = length(var.parameters)
-  description = element(values(var.parameters), count.index)
-  name  = "${local.id}-${element(keys(var.parameters), count.index)}"
+  description = element(var.parameters, count.index).description
+  name  = "${local.id}-${element(var.parameters, count.index).name}"
   type  = "String"
   value = " "
   lifecycle {
@@ -227,6 +229,8 @@ resource "aws_alb_target_group" "default" {
       path = var.health_check["path"]
       healthy_threshold = var.health_check["healthy_threshold"]
       unhealthy_threshold = var.health_check["unhealthy_threshold"]
+      interval = var.health_check["interval"]
+      timeout = var.health_check["timeout"]      
       protocol = var.health_check["protocol"]
     }
   }
