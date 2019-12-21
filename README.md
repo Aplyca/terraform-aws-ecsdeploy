@@ -1,3 +1,7 @@
+<aside class="warning">
+DEPRECATED: This repo is deprecated, use https://registry.terraform.io/modules/Aplyca/ecsdeploy instead
+</aside>
+
 # Terraform AWS ECS Deploy module
 
 Deploy al necessary resources for ECS apps
