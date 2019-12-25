@@ -1,5 +1,5 @@
 <aside class="warning">
-DEPRECATED: This repo is deprecated, use https://registry.terraform.io/modules/Aplyca/ecsdeploy instead
+DEPRECATED: This repo is deprecated, use https://registry.terraform.io/modules/Aplyca/ecsservice instead
 </aside>
 
 # Terraform AWS ECS Deploy module
