@@ -168,7 +168,7 @@ EOF
 
 module "logs" {
   source  = "Aplyca/cloudwatchlogs/aws"
-  version = "0.3.0"
+  version = "0.3.1"
 
   name    = local.id
   role = aws_iam_role.this.name
